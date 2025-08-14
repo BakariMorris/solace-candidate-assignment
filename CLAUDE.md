@@ -77,11 +77,11 @@ This is the current implementation plan we have to complete this project
 - Create a Tailwind-based design system.
 - Establish typography scale and spacing.
 - Apply consistent color palette and theming.
-- Build a reusable component library.
+- Utilize shadcn's component library to build modern components utilizing the blue theme.
 
 ### **4.2 Enhanced Search & Filtering UI**
 
-- Create intuitive search with autocomplete.
+- Create intuitive search with autocomplete, leveraging the getSearchSuggestions from search-analytics.ts.
 - Add advanced filtering (specialty, location, availability).
 - Include recent searches and suggestions.
 - Add filter chips for active filters and “clear all” button.
@@ -152,6 +152,7 @@ This is the current implementation plan we have to complete this project
 
 - Next.js with TypeScript.
 - Tailwind CSS + Headless UI.
+- Utilizing the Shadcn component library
 - SWR or React Query for data fetching.
 - React Hook Form for forms.
 - React Window for virtualization.

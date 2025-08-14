@@ -4,6 +4,10 @@ import db from "../../../db";
 import { advocates } from "../../../db/schema";
 import { advocateData } from "../../../db/seed/advocates";
 import { ApiResponse, Advocate } from "../../../types/advocate";
+import { apiCache, cacheKeys, cacheTTL } from "../../../lib/cache";
+import { apiRateLimiter, searchRateLimiter, getClientId, createRateLimitResponse } from "../../../lib/rate-limiter";
+import { withErrorHandling, validateSearchParams, DatabaseError, ApiError } from "../../../lib/error-handler";
+import { searchAnalytics } from "../../../lib/search-analytics";
 
 interface SearchParams {
   page?: string;
@@ -33,23 +37,53 @@ interface PaginatedResponse {
   };
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    
-    const params: SearchParams = {
-      page: searchParams.get('page') ?? '1',
-      limit: searchParams.get('limit') ?? '20',
-      search: searchParams.get('search') ?? undefined,
-      city: searchParams.get('city') ?? undefined,
-      degree: searchParams.get('degree') ?? undefined,
-      specialties: searchParams.get('specialties') ?? undefined,
-      minExperience: searchParams.get('minExperience') ?? undefined,
-      maxExperience: searchParams.get('maxExperience') ?? undefined,
-      sortBy: searchParams.get('sortBy') ?? 'createdAt',
-      sortOrder: searchParams.get('sortOrder') ?? 'desc',
-      cursor: searchParams.get('cursor') ?? undefined,
-    };
+async function handleGetAdvocates(request: NextRequest): Promise<Response> {
+  const startTime = Date.now();
+  
+  // Rate limiting
+  const clientId = getClientId(request);
+  const isSearchRequest = request.nextUrl.searchParams.has('search');
+  
+  const rateLimiter = isSearchRequest ? searchRateLimiter : apiRateLimiter;
+  const rateLimit = rateLimiter.check(clientId);
+  
+  if (!rateLimit.allowed) {
+    return createRateLimitResponse(rateLimit.resetTime);
+  }
+
+  // Validate search parameters
+  validateSearchParams(request.nextUrl.searchParams);
+
+  const searchParams = request.nextUrl.searchParams;
+  
+  const params: SearchParams = {
+    page: searchParams.get('page') ?? '1',
+    limit: searchParams.get('limit') ?? '20',
+    search: searchParams.get('search') ?? undefined,
+    city: searchParams.get('city') ?? undefined,
+    degree: searchParams.get('degree') ?? undefined,
+    specialties: searchParams.get('specialties') ?? undefined,
+    minExperience: searchParams.get('minExperience') ?? undefined,
+    maxExperience: searchParams.get('maxExperience') ?? undefined,
+    sortBy: searchParams.get('sortBy') ?? 'createdAt',
+    sortOrder: searchParams.get('sortOrder') ?? 'desc',
+    cursor: searchParams.get('cursor') ?? undefined,
+  };
+
+  // Generate cache key based on all parameters
+  const cacheKey = cacheKeys.advocates(params);
+  
+  // Try to get from cache first
+  const cachedResult = apiCache.get<PaginatedResponse>(cacheKey);
+  if (cachedResult) {
+    // Add rate limit headers to cached responses too
+    const response = Response.json(cachedResult);
+    response.headers.set('X-RateLimit-Limit', rateLimiter === searchRateLimiter ? '50' : '100');
+    response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
+    response.headers.set('X-RateLimit-Reset', Math.ceil(rateLimit.resetTime / 1000).toString());
+    response.headers.set('X-Cache', 'HIT');
+    return response;
+  }
 
     // Parse pagination params
     const page = Math.max(1, parseInt(params.page));
@@ -68,6 +102,7 @@ export async function GET(request: NextRequest) {
           advocate.lastName.toLowerCase().includes(searchLower) ||
           advocate.city.toLowerCase().includes(searchLower) ||
           advocate.degree.toLowerCase().includes(searchLower) ||
+          advocate.phoneNumber.toString().includes(params.search) ||
           advocate.specialties.some(specialty => specialty.toLowerCase().includes(searchLower))
         );
       }
@@ -141,13 +176,16 @@ export async function GET(request: NextRequest) {
         },
       };
 
+      // Cache the response for a short time since it's fallback data
+      apiCache.set(cacheKey, response, cacheTTL.SHORT);
+
       return Response.json(response);
     }
 
     // Database query construction
     const conditions = [];
 
-    // Search across name, city, degree, and specialties
+    // Search across name, city, degree, phone number, and specialties
     if (params.search) {
       const searchTerm = `%${params.search}%`;
       conditions.push(
@@ -156,6 +194,7 @@ export async function GET(request: NextRequest) {
           ilike(advocates.lastName, searchTerm),
           ilike(advocates.city, searchTerm),
           ilike(advocates.degree, searchTerm),
+          sql`${advocates.phoneNumber}::text ILIKE ${searchTerm}`,
           sql`${advocates.specialties}::text ILIKE ${searchTerm}`
         )
       );
@@ -211,22 +250,33 @@ export async function GET(request: NextRequest) {
     orderBy = params.sortOrder === 'desc' ? desc(sortColumn) : asc(sortColumn);
 
     // Get total count for pagination
-    const totalResult = await db
-      .select({ count: count() })
-      .from(advocates)
-      .where(whereClause);
+    let totalResult;
+    let data;
     
+    try {
+      totalResult = await db
+        .select({ count: count() })
+        .from(advocates)
+        .where(whereClause);
+      
+      const total = totalResult[0]?.count || 0;
+
+      // Get paginated data
+      data = await db
+        .select()
+        .from(advocates)
+        .where(whereClause)
+        .orderBy(orderBy)
+        .limit(limit)
+        .offset(params.cursor ? 0 : offset);
+    } catch (dbError) {
+      throw new DatabaseError('Failed to query advocates database', {
+        operation: 'select',
+        error: dbError instanceof Error ? dbError.message : 'Unknown database error'
+      });
+    }
+
     const total = totalResult[0]?.count || 0;
-
-    // Get paginated data
-    const data = await db
-      .select()
-      .from(advocates)
-      .where(whereClause)
-      .orderBy(orderBy)
-      .limit(limit)
-      .offset(params.cursor ? 0 : offset);
-
     const totalPages = Math.ceil(total / limit);
 
     // Generate cursors for cursor-based pagination
@@ -247,16 +297,38 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    return Response.json(response);
+    // Cache the response - longer TTL for database results
+    const ttl = params.search ? cacheTTL.SHORT : cacheTTL.MEDIUM;
+    apiCache.set(cacheKey, response, ttl);
 
-  } catch (error) {
-    console.error('API Error:', error);
-    return Response.json(
-      { 
-        error: 'Internal server error',
-        message: 'Failed to fetch advocates'
+    // Log search analytics
+    const responseTime = Date.now() - startTime;
+    searchAnalytics.logSearch({
+      query: params.search || '',
+      filters: {
+        city: params.city,
+        degree: params.degree,
+        specialties: params.specialties,
+        minExperience: params.minExperience,
+        maxExperience: params.maxExperience,
+        sortBy: params.sortBy,
+        sortOrder: params.sortOrder,
       },
-      { status: 500 }
-    );
-  }
+      resultCount: response.data.length,
+      responseTime,
+      userAgent: request.headers.get('user-agent') || undefined,
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+    });
+
+    // Create response with rate limit headers
+    const responseObj = Response.json(response);
+    responseObj.headers.set('X-RateLimit-Limit', rateLimiter === searchRateLimiter ? '50' : '100');
+    responseObj.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
+    responseObj.headers.set('X-RateLimit-Reset', Math.ceil(rateLimit.resetTime / 1000).toString());
+    responseObj.headers.set('X-Cache', 'MISS');
+    responseObj.headers.set('X-Response-Time', `${responseTime}ms`);
+
+    return responseObj;
 }
+
+export const GET = withErrorHandling(handleGetAdvocates);

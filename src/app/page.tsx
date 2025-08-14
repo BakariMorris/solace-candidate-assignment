@@ -34,7 +34,8 @@ export default function Home() {
     if (advocate.firstName.toLowerCase().includes(lowerSearchTerm) ||
         advocate.lastName.toLowerCase().includes(lowerSearchTerm) ||
         advocate.city.toLowerCase().includes(lowerSearchTerm) ||
-        advocate.degree.toLowerCase().includes(lowerSearchTerm)) {
+        advocate.degree.toLowerCase().includes(lowerSearchTerm) ||
+        advocate.phoneNumber.toString().includes(term)) {
       return true;
     }
     
@@ -45,7 +46,7 @@ export default function Home() {
     }
     
     // Check years of experience (convert once)
-    return advocate.yearsOfExperience.toString().includes(lowerSearchTerm);
+    return advocate.yearsOfExperience.toString().includes(term);
   }
 
 

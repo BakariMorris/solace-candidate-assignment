@@ -44,3 +44,41 @@ Performance monitoring endpoint that provides easy access to commonly accessed l
 index.ts
 --------
 Adds logging to all db calls
+
+# PR #4: Caching, Rate Limiting & Error handling
+
+## Functions
+
+page.tsx
+--------
+Fixed the phone number search feature, now also searches phone numbers based on the searchTerm.
+
+cache.ts
+--------
+In memory caching system utilizing a Map. Generates ttl for all cached data and upon receiving a get request, deletes it. Also has constants for the TTLS, short, medium, long, very_long and key generation based off the search parameters.
+
+rate-limiter.ts
+---------------
+Added rate limiting for API endpoints, 100 requests/min to avoid DOS vulnerability & 50 search request/min. Has functionality to cleanup the entries, getStats and returns a 429 upon receiving too many requests.
+
+search-analytics.ts
+-------------------
+Keeps a record of all of the searches, up to 10,000 and logs every time a search is made via the API. Also includes CRUD operations on this data and even creates search suggestions based on the prefix
+
+error-handler.ts
+----------------
+Creates standardizes errors to improve maintainability. Also holds the search params validation, enforcing we're receiving the expected data type.
+
+## Routes
+
+api/advocates/route.ts
+----------------------
+Now utilizes the apiCache, cacheKeys, rateLimiter, error handling and the search analytics in all requests made on the advocates route.
+
+api/analytics/route.ts
+----------------------
+Sets up routes to pull all of the data from search analytics, it has good fallbacks for grabbing stats about the queries. The popular search terms and queries. The suggestions based off of the prefix given (min 2 characters). The trends within the search terms and the most recent queries run. 
+
+api/monitoring/route.ts
+-----------------------
+Extends the functionality to include returning the stats from the caching layer. It also now includes a delete route to clear the logger and cache.
