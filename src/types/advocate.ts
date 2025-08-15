@@ -7,6 +7,8 @@ export interface Advocate {
   specialties: string[];
   yearsOfExperience: number;
   phoneNumber: number;
+  profileImageUrl?: string;
+  bio?: string;
   createdAt?: string;
 }
 

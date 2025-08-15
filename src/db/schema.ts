@@ -19,6 +19,8 @@ const advocates = pgTable("advocates", {
   specialties: jsonb("payload").default([]).notNull(),
   yearsOfExperience: integer("years_of_experience").notNull(),
   phoneNumber: bigint("phone_number", { mode: "number" }).notNull(),
+  profileImageUrl: text("profile_image_url"),
+  bio: text("bio"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
   firstNameIdx: index("idx_advocates_first_name").on(table.firstName),

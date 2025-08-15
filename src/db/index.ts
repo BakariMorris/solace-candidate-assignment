@@ -27,62 +27,19 @@ const setup = () => {
     },
   });
 
-  // Create drizzle instance without built-in logging (we'll handle timing manually)
-  const baseDb = drizzle(queryClient);
-
-  // Create a proxy to intercept and time database operations
-  const db = new Proxy(baseDb, {
-    get(target, prop) {
-      const originalMethod = target[prop as keyof typeof target];
-      
-      // Only wrap methods that return promises (database operations)
-      if (typeof originalMethod === 'function') {
-        return function(...args: any[]) {
-          const result = originalMethod.apply(target, args);
-          
-          // If it's a promise (database operation), wrap it with timing
-          if (result && typeof result.then === 'function') {
-            const startTime = Date.now();
-            const timestamp = new Date();
-            
-            return result
-              .then((data: any) => {
-                const duration = Date.now() - startTime;
-                
-                if (process.env.NODE_ENV === 'development') {
-                  dbLogger.log({
-                    query: `${String(prop)}()`,
-                    duration,
-                    timestamp,
-                    success: true,
-                  });
-                }
-                
-                return data;
-              })
-              .catch((error: any) => {
-                const duration = Date.now() - startTime;
-                
-                if (process.env.NODE_ENV === 'development') {
-                  dbLogger.log({
-                    query: `${String(prop)}()`,
-                    duration,
-                    timestamp,
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                  });
-                }
-                
-                throw error;
-              });
-          }
-          
-          return result;
-        };
+  // Create drizzle instance with logging enabled in development
+  const db = drizzle(queryClient, {
+    logger: process.env.NODE_ENV === 'development' ? {
+      logQuery: (query: string, params: unknown[]) => {
+        const startTime = Date.now();
+        dbLogger.log({
+          query,
+          duration: 0,
+          timestamp: new Date(),
+          success: true,
+        });
       }
-      
-      return originalMethod;
-    },
+    } : undefined
   });
 
   return db;

@@ -1,36 +1,58 @@
 "use client";
 
-import { ChangeEvent, useState, useEffect } from "react";
+import { useEffect, useMemo, useCallback, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 import { Advocate } from "../types/advocate";
+import VirtualizedAdvocateTable from "../components/VirtualizedAdvocateTable";
+import SearchForm from "../components/SearchForm";
+import { useSearchStore } from "../store/useSearchStore";
+import { useUrlState } from "../hooks/useUrlState";
 
 const fetchAdvocates = async (): Promise<Advocate[]> => {
-  const res = await fetch("/api/advocates");
+  const res = await fetch("/api/advocates", {
+    headers: {
+      'Cache-Control': 'max-age=300', // 5 minutes
+    },
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to fetch advocates: ${res.status} ${res.statusText}`);
+  }
+  
   const jsonResponse = await res.json();
   return jsonResponse.data;
 };
 
-export default function Home() {
-  const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+function HomeContent() {
+  const { 
+    searchTerm, 
+    setSearchTerm, 
+    addRecentSearch
+  } = useSearchStore();
+  
+  useUrlState();
+  
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
-  const { data: advocates = [], isLoading, error } = useQuery({
+  const { data: advocates = [], isLoading, error, refetch } = useQuery({
     queryKey: ['advocates'],
     queryFn: fetchAdvocates,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
   });
 
-  // Update filtered advocates when advocates data changes
   useEffect(() => {
-    setFilteredAdvocates(advocates);
-  }, [advocates]);
+    if (debouncedSearchTerm.trim()) {
+      addRecentSearch(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm, addRecentSearch]);
 
-  const filterAdvocates = (advocate: Advocate, term: string) => {
-    // Early return for empty search term
+  const filterAdvocates = useCallback((advocate: Advocate, term: string) => {
     if (!term.trim()) return true;
     
     const lowerSearchTerm = term.toLowerCase();
     
-    // Check string fields with case-insensitive comparison
     if (advocate.firstName.toLowerCase().includes(lowerSearchTerm) ||
         advocate.lastName.toLowerCase().includes(lowerSearchTerm) ||
         advocate.city.toLowerCase().includes(lowerSearchTerm) ||
@@ -39,34 +61,59 @@ export default function Home() {
       return true;
     }
     
-    // Check specialties array efficiently
     if (advocate.specialties.some(specialty => 
         specialty.toLowerCase().includes(lowerSearchTerm))) {
       return true;
     }
     
-    // Check years of experience (convert once)
     return advocate.yearsOfExperience.toString().includes(term);
+  }, []);
+
+  // Optimistic filtering - show immediate results for better UX
+  const optimisticAdvocates = useMemo(() => {
+    return advocates.filter(advocate => 
+      filterAdvocates(advocate, searchTerm)
+    );
+  }, [advocates, searchTerm, filterAdvocates]);
+
+  // Debounced filtering for final state
+  const filteredAdvocates = useMemo(() => {
+    return advocates.filter(advocate => 
+      filterAdvocates(advocate, debouncedSearchTerm)
+    );
+  }, [advocates, debouncedSearchTerm, filterAdvocates]);
+
+  // Get the current filtered advocates list (immediate vs debounced search results)
+  const currentAdvocates = searchTerm !== debouncedSearchTerm ? optimisticAdvocates : filteredAdvocates;
+
+
+  if (isLoading) {
+    return (
+      <div style={{ margin: "24px", textAlign: "center", padding: "2rem" }}>
+        <div>Loading advocates...</div>
+        <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#666" }}>
+          Please wait while we fetch the latest advocate data.
+        </div>
+      </div>
+    );
   }
 
-
-  const changeInputHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const newSearchTerm = e.target.value;
-    setSearchTerm(newSearchTerm);
-    
-    const filteredResults = advocates.filter(advocate => 
-      filterAdvocates(advocate, newSearchTerm)
+  if (error) {
+    return (
+      <div style={{ margin: "24px", textAlign: "center", padding: "2rem", color: "#d32f2f" }}>
+        <div>Error loading advocates</div>
+        <div style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
+          {error instanceof Error ? error.message : "An unexpected error occurred"}
+        </div>
+        <button 
+          onClick={() => window.location.reload()} 
+          style={{ marginTop: "1rem", padding: "0.5rem 1rem" }}
+        >
+          Retry
+        </button>
+      </div>
     );
-    setFilteredAdvocates(filteredResults);
-  };
-
-  const resetHandler = () => {
-    setSearchTerm('');
-    setFilteredAdvocates(advocates);
-  };
-
-  if (isLoading) return <div>Loading advocates...</div>;
-  if (error) return <div>Error loading advocates: {error.message}</div>;
+  }
 
   return (
     <main style={{ margin: "24px" }}>
@@ -74,49 +121,44 @@ export default function Home() {
       <br />
       <br />
       <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span>{searchTerm}</span>
-        </p>
-        <input 
-          style={{ border: "1px solid black" }} 
-          value={searchTerm}
-          onChange={changeInputHandler} 
-        />
-        <button onClick={resetHandler}>Reset Search</button>
+        <h2 style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>Search Advocates</h2>
+        <SearchForm onSearch={setSearchTerm} />
+        {searchTerm && (
+          <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "0.5rem" }}>
+            Searching for: <strong>{searchTerm}</strong>
+            {searchTerm !== debouncedSearchTerm && (
+              <span style={{ marginLeft: "0.5rem", fontSize: "0.8rem", color: "#666" }}>
+                (searching...)
+              </span>
+            )}
+          </p>
+        )}
       </div>
       <br />
-      <br />
-      <table>
-        <thead>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>City</th>
-          <th>Degree</th>
-          <th>Specialties</th>
-          <th>Years of Experience</th>
-          <th>Phone Number</th>
-        </thead>
-        <tbody>
-          {filteredAdvocates.map((advocate) => {
-            return (
-              <tr key={advocate.id}>
-                <td>{advocate.firstName}</td>
-                <td>{advocate.lastName}</td>
-                <td>{advocate.city}</td>
-                <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s, index) => (
-                    <div key={index}>{s}</div>
-                  ))}
-                </td>
-                <td>{advocate.yearsOfExperience}</td>
-                <td>{advocate.phoneNumber}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div style={{ marginBottom: "1rem", fontSize: "0.9rem", color: "#666" }}>
+        Showing {currentAdvocates.length} of {advocates.length} advocates
+        {searchTerm !== debouncedSearchTerm && (
+          <span style={{ marginLeft: "0.5rem", fontSize: "0.8rem", color: "#f59e0b" }}>
+            (updating...)
+          </span>
+        )}
+      </div>
+      <VirtualizedAdvocateTable 
+        advocates={currentAdvocates} 
+        height={600} 
+      />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div style={{ margin: "24px", textAlign: "center", padding: "2rem" }}>
+        <div>Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

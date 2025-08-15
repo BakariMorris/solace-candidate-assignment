@@ -50,7 +50,7 @@ This is the current implementation plan we have to complete this project
 ### **3.1 Data Fetching Optimization**
 
 - Use SWR or React Query for data fetching.
-- Add debounced search (300ms).
+- Add debounced search (120ms).
 - Implement optimistic updates.
 - Improve loading states and error boundaries.
 
@@ -171,7 +171,7 @@ This is the current implementation plan we have to complete this project
 ## **Performance Targets**
 
 - Initial page load: **< 2 seconds**.
-- Search response time: **< 300ms**.
+- Search response time: **< 120ms**.
 - Support **100k+ advocates** without performance drop.
 - Lighthouse score: **95+**.
 - WCAG 2.1 accessibility compliance.
@@ -187,3 +187,4 @@ This is the current implementation plan we have to complete this project
     - Scaling considerations.
     - Security considerations.
     - Performance benchmarks.
+    - Summary of all changes made in each PR.

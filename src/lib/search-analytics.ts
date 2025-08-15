@@ -78,7 +78,7 @@ class SearchAnalytics {
 
     const suggestions: SearchSuggestion[] = [];
     
-    for (const [query, data] of this.popularSearches.entries()) {
+    for (const [query, data] of Array.from(this.popularSearches.entries())) {
       if (query.includes(normalizedPrefix)) {
         // Simple scoring: frequency * recency factor
         const recencyFactor = this.getRecencyFactor(data.lastSearched);
@@ -195,7 +195,7 @@ class SearchAnalytics {
     this.searches = this.searches.filter(search => search.timestamp > cutoff);
     
     // Remove old popular searches
-    for (const [query, data] of this.popularSearches.entries()) {
+    for (const [query, data] of Array.from(this.popularSearches.entries())) {
       if (data.lastSearched < cutoff) {
         this.popularSearches.delete(query);
       }
@@ -212,4 +212,4 @@ if (typeof setInterval !== 'undefined') {
   }, 60 * 60 * 1000);
 }
 
-export { SearchEvent, PopularSearch, SearchSuggestion };
+export type { SearchEvent, PopularSearch, SearchSuggestion };

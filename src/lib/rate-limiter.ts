@@ -55,7 +55,7 @@ class RateLimiter {
 
   private cleanup() {
     const now = Date.now();
-    for (const [clientId, entry] of this.clients.entries()) {
+    for (const [clientId, entry] of Array.from(this.clients.entries())) {
       if (now > entry.resetTime) {
         this.clients.delete(clientId);
       }

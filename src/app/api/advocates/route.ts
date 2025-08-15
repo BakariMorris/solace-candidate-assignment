@@ -3,39 +3,27 @@ import { sql, eq, and, or, ilike, desc, asc, count } from "drizzle-orm";
 import db from "../../../db";
 import { advocates } from "../../../db/schema";
 import { advocateData } from "../../../db/seed/advocates";
-import { ApiResponse, Advocate } from "../../../types/advocate";
+import { Advocate } from "../../../types/advocate";
+import { 
+  RawSearchParams, 
+  ProcessedSearchParams, 
+  PaginatedApiResponse 
+} from "../../../types/api";
 import { apiCache, cacheKeys, cacheTTL } from "../../../lib/cache";
 import { apiRateLimiter, searchRateLimiter, getClientId, createRateLimitResponse } from "../../../lib/rate-limiter";
 import { withErrorHandling, validateSearchParams, DatabaseError, ApiError } from "../../../lib/error-handler";
 import { searchAnalytics } from "../../../lib/search-analytics";
 
-interface SearchParams {
-  page?: string;
-  limit?: string;
-  search?: string;
-  city?: string;
-  degree?: string;
-  specialties?: string;
-  minExperience?: string;
-  maxExperience?: string;
-  sortBy?: string;
-  sortOrder?: string;
-  cursor?: string;
+// Helper function for safe parseInt
+function safeParseInt(value: string | undefined, defaultValue: number): number {
+  if (!value) return defaultValue;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
 }
 
-interface PaginatedResponse {
-  data: Advocate[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    nextCursor?: string;
-    previousCursor?: string;
-  };
-}
+// Type alias for cleaner code
+type SearchParams = ProcessedSearchParams;
+type PaginatedResponse = PaginatedApiResponse<Advocate>;
 
 async function handleGetAdvocates(request: NextRequest): Promise<Response> {
   const startTime = Date.now();
@@ -56,18 +44,42 @@ async function handleGetAdvocates(request: NextRequest): Promise<Response> {
 
   const searchParams = request.nextUrl.searchParams;
   
+  // Extract raw params
+  const rawParams: RawSearchParams = {
+    page: searchParams.get('page'),
+    limit: searchParams.get('limit'),
+    search: searchParams.get('search'),
+    city: searchParams.get('city'),
+    degree: searchParams.get('degree'),
+    specialties: searchParams.get('specialties'),
+    minExperience: searchParams.get('minExperience'),
+    maxExperience: searchParams.get('maxExperience'),
+    sortBy: searchParams.get('sortBy'),
+    sortOrder: searchParams.get('sortOrder'),
+    cursor: searchParams.get('cursor'),
+  };
+
+  // Process and validate params
+  const sortByOptions: Array<'firstName' | 'lastName' | 'city' | 'yearsOfExperience' | 'createdAt'> = 
+    ['firstName', 'lastName', 'city', 'yearsOfExperience', 'createdAt'];
+  const sortOrderOptions: Array<'asc' | 'desc'> = ['asc', 'desc'];
+
   const params: SearchParams = {
-    page: searchParams.get('page') ?? '1',
-    limit: searchParams.get('limit') ?? '20',
-    search: searchParams.get('search') ?? undefined,
-    city: searchParams.get('city') ?? undefined,
-    degree: searchParams.get('degree') ?? undefined,
-    specialties: searchParams.get('specialties') ?? undefined,
-    minExperience: searchParams.get('minExperience') ?? undefined,
-    maxExperience: searchParams.get('maxExperience') ?? undefined,
-    sortBy: searchParams.get('sortBy') ?? 'createdAt',
-    sortOrder: searchParams.get('sortOrder') ?? 'desc',
-    cursor: searchParams.get('cursor') ?? undefined,
+    page: rawParams.page || '1',
+    limit: rawParams.limit || '20',
+    search: rawParams.search || undefined,
+    city: rawParams.city || undefined,
+    degree: rawParams.degree || undefined,
+    specialties: rawParams.specialties || undefined,
+    minExperience: rawParams.minExperience || undefined,
+    maxExperience: rawParams.maxExperience || undefined,
+    sortBy: (rawParams.sortBy && sortByOptions.includes(rawParams.sortBy as any)) 
+      ? (rawParams.sortBy as 'firstName' | 'lastName' | 'city' | 'yearsOfExperience' | 'createdAt')
+      : 'createdAt',
+    sortOrder: (rawParams.sortOrder && sortOrderOptions.includes(rawParams.sortOrder as any))
+      ? (rawParams.sortOrder as 'asc' | 'desc')
+      : 'desc',
+    cursor: rawParams.cursor || undefined,
   };
 
   // Generate cache key based on all parameters
@@ -86,8 +98,8 @@ async function handleGetAdvocates(request: NextRequest): Promise<Response> {
   }
 
     // Parse pagination params
-    const page = Math.max(1, parseInt(params.page));
-    const limit = Math.min(100, Math.max(1, parseInt(params.limit))); // Max 100 per page
+    const page = Math.max(1, parseInt(params.page, 10));
+    const limit = Math.min(100, Math.max(1, parseInt(params.limit, 10))); // Max 100 per page
     const offset = (page - 1) * limit;
 
     // Check if database is available
@@ -102,7 +114,7 @@ async function handleGetAdvocates(request: NextRequest): Promise<Response> {
           advocate.lastName.toLowerCase().includes(searchLower) ||
           advocate.city.toLowerCase().includes(searchLower) ||
           advocate.degree.toLowerCase().includes(searchLower) ||
-          advocate.phoneNumber.toString().includes(params.search) ||
+          advocate.phoneNumber.toString().includes(searchLower) ||
           advocate.specialties.some(specialty => specialty.toLowerCase().includes(searchLower))
         );
       }
@@ -131,34 +143,59 @@ async function handleGetAdvocates(request: NextRequest): Promise<Response> {
       }
 
       if (params.minExperience) {
-        const minExp = parseInt(params.minExperience);
+        const minExp = safeParseInt(params.minExperience, 0);
         filteredData = filteredData.filter(advocate => advocate.yearsOfExperience >= minExp);
       }
 
       if (params.maxExperience) {
-        const maxExp = parseInt(params.maxExperience);
+        const maxExp = safeParseInt(params.maxExperience, 100);
         filteredData = filteredData.filter(advocate => advocate.yearsOfExperience <= maxExp);
       }
 
       // Sorting
-      if (params.sortBy && ['firstName', 'lastName', 'city', 'yearsOfExperience', 'createdAt'].includes(params.sortBy)) {
-        filteredData.sort((a, b) => {
-          const aVal = a[params.sortBy as keyof Advocate];
-          const bVal = b[params.sortBy as keyof Advocate];
+      filteredData.sort((a, b) => {
+        // Type-safe access to advocate properties
+        let aVal: string | number;
+        let bVal: string | number;
+        
+        switch (params.sortBy) {
+          case 'firstName':
+            aVal = a.firstName;
+            bVal = b.firstName;
+            break;
+          case 'lastName':
+            aVal = a.lastName;
+            bVal = b.lastName;
+            break;
+          case 'city':
+            aVal = a.city;
+            bVal = b.city;
+            break;
+          case 'yearsOfExperience':
+            aVal = a.yearsOfExperience;
+            bVal = b.yearsOfExperience;
+            break;
+          case 'createdAt':
+            // For in-memory data, use a default date or index-based ordering
+            aVal = (a as any).createdAt || new Date().toISOString();
+            bVal = (b as any).createdAt || new Date().toISOString();
+            break;
+          default:
+            return 0;
+        }
           
-          if (typeof aVal === 'string' && typeof bVal === 'string') {
-            const result = aVal.localeCompare(bVal);
-            return params.sortOrder === 'desc' ? -result : result;
-          }
-          
-          if (typeof aVal === 'number' && typeof bVal === 'number') {
-            const result = aVal - bVal;
-            return params.sortOrder === 'desc' ? -result : result;
-          }
-          
-          return 0;
-        });
-      }
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          const result = aVal.localeCompare(bVal);
+          return params.sortOrder === 'desc' ? -result : result;
+        }
+        
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          const result = aVal - bVal;
+          return params.sortOrder === 'desc' ? -result : result;
+        }
+        
+        return 0;
+      });
 
       const total = filteredData.length;
       const paginatedData = filteredData.slice(offset, offset + limit);
@@ -179,7 +216,34 @@ async function handleGetAdvocates(request: NextRequest): Promise<Response> {
       // Cache the response for a short time since it's fallback data
       apiCache.set(cacheKey, response, cacheTTL.SHORT);
 
-      return Response.json(response);
+      // Log search analytics for fallback data too
+      const responseTime = Date.now() - startTime;
+      searchAnalytics.logSearch({
+        query: params.search || '',
+        filters: {
+          city: params.city,
+          degree: params.degree,
+          specialties: params.specialties,
+          minExperience: params.minExperience,
+          maxExperience: params.maxExperience,
+          sortBy: params.sortBy,
+          sortOrder: params.sortOrder,
+        },
+        resultCount: response.data.length,
+        responseTime,
+        userAgent: request.headers.get('user-agent') || undefined,
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+      });
+
+      // Create response with rate limit headers
+      const responseObj = Response.json(response);
+      responseObj.headers.set('X-RateLimit-Limit', rateLimiter === searchRateLimiter ? '50' : '100');
+      responseObj.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
+      responseObj.headers.set('X-RateLimit-Reset', Math.ceil(rateLimit.resetTime / 1000).toString());
+      responseObj.headers.set('X-Cache', 'MISS');
+      responseObj.headers.set('X-Response-Time', `${responseTime}ms`);
+
+      return responseObj;
     }
 
     // Database query construction
@@ -221,19 +285,23 @@ async function handleGetAdvocates(request: NextRequest): Promise<Response> {
 
     // Experience range filters
     if (params.minExperience) {
-      conditions.push(sql`${advocates.yearsOfExperience} >= ${parseInt(params.minExperience)}`);
+      const minExp = safeParseInt(params.minExperience, 0);
+      conditions.push(sql`${advocates.yearsOfExperience} >= ${minExp}`);
     }
     if (params.maxExperience) {
-      conditions.push(sql`${advocates.yearsOfExperience} <= ${parseInt(params.maxExperience)}`);
+      const maxExp = safeParseInt(params.maxExperience, 100);
+      conditions.push(sql`${advocates.yearsOfExperience} <= ${maxExp}`);
     }
 
     // Cursor-based pagination (if cursor is provided)
     if (params.cursor) {
-      const cursorId = parseInt(params.cursor);
-      if (params.sortOrder === 'desc') {
-        conditions.push(sql`${advocates.id} < ${cursorId}`);
-      } else {
-        conditions.push(sql`${advocates.id} > ${cursorId}`);
+      const cursorId = safeParseInt(params.cursor, 0);
+      if (cursorId > 0) {
+        if (params.sortOrder === 'desc') {
+          conditions.push(sql`${advocates.id} < ${cursorId}`);
+        } else {
+          conditions.push(sql`${advocates.id} > ${cursorId}`);
+        }
       }
     }
 

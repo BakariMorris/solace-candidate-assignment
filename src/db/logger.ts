@@ -108,4 +108,4 @@ export async function loggedQuery<T>(
   }
 }
 
-export { QueryLog };
+export type { QueryLog };
