@@ -1,8 +1,13 @@
 Solace Advocate Search — Candidate Submission 🚀
 
-This repository contains my candidate implementation for the Solace Advocate Search application. The goal was to take an early-stage prototype and transform it into a production-ready, high-performance platform capable of handling 100k+ advocates with robust search, filtering, booking, and observability features.
+Hello! This is my candidate sumbission for the Solace Advocate Search application. The goal was to take an early-stage prototype and transform it into a production-ready, high-performance platform capable of handling 100k+ advocates with robust search, filtering, booking, and observability features. Feel free to visit my: 
 
-This README serves as both technical documentation and a narrative walkthrough of my approach across multiple phases (mapped to pull requests). At the end of the process, I’ll provide a Loom walkthrough of my thought process and highlight design trade-offs made along the way.
+- *Deployed site:** [https://solace-candidate-assignment-tau.vercel.app/](https://solace-candidate-assignment-tau.vercel.app/)
+- **Explainer video:** [Watch on Loom](https://www.loom.com/share/a6c7ca9bf6854e81a076cb9352729f58)
+- **Project breakdown:** [DISCUSSION.md on GitHub](https://github.com/BakariMorris/solace-candidate-assignment/blob/master/DISCUSSION.md) — Ordered by PR
+
+
+This README serves as both technical documentation and a narrative walkthrough of my approach across multiple phases (mapped to pull requests). At the end of the process, I’ll provide a Loom walkthrough of my thought process and highlight design trade-offs made along the way. If you would like a more in depth idea of the
 
 🌟 Highlights
 
@@ -179,5 +184,6 @@ Each PR was carefully scoped to reflect real-world iteration cycles.
 Strong focus on scalability, developer experience, and observability from the start.
 
 Balanced production-readiness with time constraints by prioritizing features with the greatest impact.
+
 
 👉 This README demonstrates how I’d approach building and documenting a candidate project like a production engineer: clear technical rigor, strong design thinking, and thoughtful communication.
