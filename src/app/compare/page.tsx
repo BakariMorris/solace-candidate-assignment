@@ -62,7 +62,7 @@ export default function ComparePage() {
                 Compare Advocates
               </h1>
               <p className="text-body-lg text-muted-foreground">
-                Compare advocates side by side to make the best choice
+                Compare advocates side by side to make the best choice for your needs
               </p>
             </div>
           </div>

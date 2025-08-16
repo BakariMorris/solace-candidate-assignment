@@ -28,10 +28,10 @@ const timeSlots = [
 ];
 
 const consultationTypes = [
-  { type: "Initial Consultation", duration: "60 min", price: 200 },
+  { type: "Initial Advocacy Session", duration: "60 min", price: 200 },
   { type: "Follow-up Meeting", duration: "30 min", price: 150 },
-  { type: "Document Review", duration: "45 min", price: 175 },
-  { type: "Case Strategy Session", duration: "90 min", price: 275 }
+  { type: "Records Review", duration: "45 min", price: 175 },
+  { type: "Healthcare Strategy Session", duration: "90 min", price: 275 }
 ];
 
 export default function BookingModal({ advocate, isOpen, onClose }: BookingModalProps) {

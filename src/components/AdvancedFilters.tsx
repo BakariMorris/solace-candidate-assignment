@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Filter, X, MapPin, Briefcase, Star, Clock } from "lucide-react";
+import { Filter, X, MapPin, Briefcase, Star, Clock, Navigation } from "lucide-react";
+import { useGeolocation } from "../hooks/useGeolocation";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -12,6 +13,8 @@ interface FilterState {
   locations: string[];
   experienceRange: [number, number];
   availability: string[];
+  nearMe?: boolean;
+  maxDistance?: number;
 }
 
 interface AdvancedFiltersProps {
@@ -30,8 +33,12 @@ export default function AdvancedFilters({
     specialties: [],
     locations: [],
     experienceRange: [0, 30],
-    availability: []
+    availability: [],
+    nearMe: false,
+    maxDistance: 25
   });
+
+  const { coordinates, error, loading, requestLocation, clearLocation } = useGeolocation();
 
   const [searchSpecialty, setSearchSpecialty] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
@@ -67,15 +74,30 @@ export default function AdvancedFilters({
       specialties: [],
       locations: [],
       experienceRange: [0, 30],
-      availability: []
+      availability: [],
+      nearMe: false,
+      maxDistance: 25
     });
+    clearLocation();
+  };
+
+  const handleNearMeToggle = () => {
+    const newNearMe = !filters.nearMe;
+    setFilters(prev => ({ ...prev, nearMe: newNearMe }));
+    
+    if (newNearMe && !coordinates) {
+      requestLocation();
+    } else if (!newNearMe) {
+      clearLocation();
+    }
   };
 
   const hasActiveFilters = filters.specialties.length > 0 || 
                           filters.locations.length > 0 || 
                           filters.availability.length > 0 ||
                           filters.experienceRange[0] > 0 || 
-                          filters.experienceRange[1] < 30;
+                          filters.experienceRange[1] < 30 ||
+                          filters.nearMe;
 
   const filteredSpecialties = availableSpecialties.filter(specialty =>
     specialty.toLowerCase().includes(searchSpecialty.toLowerCase()) &&
@@ -209,6 +231,72 @@ export default function AdvancedFilters({
                     {location}
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Near Me / Distance Filter */}
+            <div>
+              <div className="flex items-center space-x-2 mb-3">
+                <Navigation className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-body font-semibold">Location & Distance</h4>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="nearMe"
+                      checked={filters.nearMe}
+                      onChange={handleNearMeToggle}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="nearMe" className="text-body-sm">
+                      Show advocates near me
+                    </label>
+                  </div>
+                  {loading && (
+                    <div className="text-caption text-muted-foreground">
+                      Getting location...
+                    </div>
+                  )}
+                </div>
+
+                {filters.nearMe && (
+                  <div className="space-y-2">
+                    {coordinates && (
+                      <div className="text-caption text-green-600">
+                        ✓ Location detected
+                      </div>
+                    )}
+                    {error && (
+                      <div className="text-caption text-red-600">
+                        {error}
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-caption text-muted-foreground block mb-1">
+                        Max Distance: {filters.maxDistance} miles
+                      </label>
+                      <input
+                        type="range"
+                        min="5"
+                        max="100"
+                        step="5"
+                        value={filters.maxDistance}
+                        onChange={(e) => setFilters(prev => ({
+                          ...prev,
+                          maxDistance: parseInt(e.target.value)
+                        }))}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-caption text-muted-foreground">
+                        <span>5 mi</span>
+                        <span>100 mi</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

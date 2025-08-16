@@ -59,7 +59,7 @@ export default function FavoritesPage() {
             </Link>
             <div>
               <h1 className="text-display flex items-center gap-3">
-                <Heart className="h-8 w-8 text-red-500 fill-current" />
+                <Heart className="h-8 w-8 text-primary fill-current" />
                 My Favorite Advocates
               </h1>
               <p className="text-body-lg text-muted-foreground">
@@ -148,6 +148,8 @@ export default function FavoritesPage() {
         isOpen={isProfileModalOpen}
         onClose={handleCloseProfileModal}
         onBookConsultation={handleBookConsultation}
+        allAdvocates={favorites}
+        onViewProfile={handleViewProfile}
       />
 
       {/* Booking Modal */}

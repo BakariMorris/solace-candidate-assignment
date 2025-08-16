@@ -4,6 +4,8 @@ import "./globals.css";
 import QueryProvider from "./providers/QueryProvider";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { ThemeProvider } from "../components/theme-provider";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const spectral = Spectral({ 
   subsets: ["latin"],
@@ -22,8 +24,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Solace Candidate Assignment",
-  description: "Show us what you got",
+  title: "Solace Advocates",
+  description: "Find the perfect advocate to support your journey",
 };
 
 export default function RootLayout({
@@ -39,7 +41,17 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <QueryProvider>{children}</QueryProvider>
+          <ErrorBoundary>
+            <QueryProvider>
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+            </QueryProvider>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

@@ -12,6 +12,7 @@ import { useComparisonStore } from "../store/useComparisonStore";
 import { useSearchStore } from "../store/useSearchStore";
 import { HighlightText } from "../utils/highlightText";
 import LazyImage from "./LazyImage";
+import { userAnalytics } from "../lib/user-analytics";
 
 interface AdvocateCardProps {
   advocate: Advocate;
@@ -39,8 +40,10 @@ export default function AdvocateCard({ advocate, onViewProfile, onBookConsultati
     
     if (isAdvocateFavorite) {
       removeFavorite(advocate.id);
+      userAnalytics.trackEvent('favorite_removed', 'interaction', 'remove_favorite', undefined, advocate.id);
     } else {
       addFavorite(advocate);
+      userAnalytics.trackFavoriteAdded(advocate.id);
     }
   };
 
@@ -50,8 +53,10 @@ export default function AdvocateCard({ advocate, onViewProfile, onBookConsultati
     
     if (isInComparisonList) {
       removeFromComparison(advocate.id);
+      userAnalytics.trackEvent('comparison_removed', 'interaction', 'remove_comparison', undefined, advocate.id);
     } else if (canAddMore()) {
       addToComparison(advocate);
+      userAnalytics.trackEvent('comparison_added', 'interaction', 'add_comparison', undefined, advocate.id);
     }
   };
 
@@ -71,17 +76,17 @@ export default function AdvocateCard({ advocate, onViewProfile, onBookConsultati
   return (
     <Card className="card-flat interactive-hover cursor-pointer group relative" onClick={() => onViewProfile?.(advocate)}>
       {/* Action Buttons */}
-      <div className="absolute top-2 right-2 z-10 flex gap-1">
+      <div className="absolute top-4 right-3 z-10 flex gap-1">
         <Button
           variant="ghost"
           size="sm"
-          className={`p-2 h-8 w-8 transition-all duration-200 ${isInComparisonList ? 'bg-primary/10 hover:bg-primary/20' : 'hover:bg-accent'}`}
+          className={`p-2 h-8 w-8 transition-all duration-200 ${isInComparisonList ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : 'hover:bg-accent'}`}
           onClick={handleComparisonToggle}
           disabled={!isInComparisonList && !canAddMore()}
           title={isInComparisonList ? "Remove from comparison" : "Add to comparison"}
         >
           {isInComparisonList ? (
-            <Check className="h-4 w-4 text-primary" />
+            <Check className="h-4 w-4 text-primary-foreground" />
           ) : (
             <Scale className={`h-4 w-4 transition-colors ${canAddMore() ? 'text-gray-400 hover:text-primary' : 'text-gray-300'}`} />
           )}
@@ -89,11 +94,11 @@ export default function AdvocateCard({ advocate, onViewProfile, onBookConsultati
         <Button
           variant="ghost"
           size="sm"
-          className={`p-2 h-8 w-8 transition-all duration-200 ${isAdvocateFavorite ? 'bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30' : 'hover:bg-accent'}`}
+          className={`p-2 h-8 w-8 transition-all duration-200 ${isAdvocateFavorite ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : 'hover:bg-accent'}`}
           onClick={handleFavoriteToggle}
         >
           <Heart 
-            className={`h-4 w-4 transition-colors ${isAdvocateFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+            className={`h-4 w-4 transition-colors ${isAdvocateFavorite ? 'fill-current text-primary-foreground' : 'text-gray-400 hover:text-primary'}`}
           />
         </Button>
       </div>
@@ -113,7 +118,7 @@ export default function AdvocateCard({ advocate, onViewProfile, onBookConsultati
             </div>
           </div>
           
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pr-20">
             {/* Name gets its own full row */}
             <h3 className="text-h4 font-semibold mb-1">
               <HighlightText 

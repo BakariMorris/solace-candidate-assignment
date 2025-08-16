@@ -73,9 +73,10 @@ const baseAdvocateData = [
 ];
 
 // Generate full advocate data with profile images and bios
-const advocateData = baseAdvocateData.map(advocate => {
+const advocateData = baseAdvocateData.map((advocate, index) => {
   const advocateSpecialties = specialties.slice(...randomSpecialty());
   return {
+    id: index + 1, // Add unique ID starting from 1
     ...advocate,
     specialties: advocateSpecialties,
     profileImageUrl: generateProfileImageUrl(advocate.firstName, advocate.lastName),

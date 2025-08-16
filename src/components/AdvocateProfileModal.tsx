@@ -25,19 +25,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Advocate } from "../types/advocate";
 import { formatPhoneNumber } from "../utils/formatPhone";
 import LazyImage from "./LazyImage";
+import { getSimilarAdvocates } from "../utils/recommendations";
 
 interface AdvocateProfileModalProps {
   advocate: Advocate | null;
   isOpen: boolean;
   onClose: () => void;
   onBookConsultation?: (advocate: Advocate) => void;
+  allAdvocates?: Advocate[];
+  onViewProfile?: (advocate: Advocate) => void;
 }
 
 export default function AdvocateProfileModal({
   advocate,
   isOpen,
   onClose,
-  onBookConsultation
+  onBookConsultation,
+  allAdvocates = [],
+  onViewProfile
 }: AdvocateProfileModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'experience' | 'reviews'>('overview');
 
@@ -72,6 +77,9 @@ export default function AdvocateProfileModal({
   ].slice(0, Math.floor(Math.random() * 3) + 1);
 
   const hourlyRate = Math.floor(Math.random() * 300) + 200; // $200-$500
+
+  // Get similar advocates
+  const similarAdvocates = getSimilarAdvocates(advocate, allAdvocates, 3);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -346,6 +354,76 @@ export default function AdvocateProfileModal({
               </div>
             )}
           </div>
+
+          {/* Similar Advocates */}
+          {similarAdvocates.length > 0 && (
+            <div className="mt-8 pt-6 border-t">
+              <h3 className="text-h3 font-semibold mb-4">Similar Advocates</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {similarAdvocates.map((similarAdvocate) => {
+                  const simRating = Math.min(5.0, 4.0 + (similarAdvocate.yearsOfExperience / 25));
+                  return (
+                    <Card 
+                      key={similarAdvocate.id} 
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => onViewProfile?.(similarAdvocate)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <LazyImage
+                            src={similarAdvocate.profileImageUrl}
+                            alt={`${similarAdvocate.firstName} ${similarAdvocate.lastName}`}
+                            width={40}
+                            height={40}
+                            className="rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="font-semibold text-body">
+                              {similarAdvocate.firstName} {similarAdvocate.lastName}
+                            </h4>
+                            <p className="text-caption text-muted-foreground">{similarAdvocate.city}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${
+                                i < Math.floor(simRating)
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                          <span className="text-caption text-muted-foreground ml-1">
+                            {simRating.toFixed(1)}
+                          </span>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {similarAdvocate.specialties.slice(0, 2).map((specialty, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {specialty}
+                            </Badge>
+                          ))}
+                          {similarAdvocate.specialties.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{similarAdvocate.specialties.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <p className="text-caption text-muted-foreground">
+                          {similarAdvocate.yearsOfExperience} years experience
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

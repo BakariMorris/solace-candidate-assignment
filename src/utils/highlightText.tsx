@@ -11,7 +11,7 @@ export function HighlightText({
   text, 
   searchTerm, 
   className = '', 
-  highlightClassName = 'px-1 rounded font-medium' 
+  highlightClassName = 'px-1 rounded font-medium bg-primary/20 text-primary-foreground' 
 }: HighlightTextProps) {
   if (!searchTerm.trim()) {
     return <span className={className}>{text}</span>;
@@ -24,7 +24,7 @@ export function HighlightText({
     <span className={className}>
       {parts.map((part, index) => 
         regex.test(part) ? (
-          <mark key={index} className={highlightClassName} style={{backgroundColor: '#0bf0bc'}}>
+          <mark key={index} className={highlightClassName}>
             {part}
           </mark>
         ) : (
@@ -39,5 +39,5 @@ export function highlightSearchTerms(text: string, searchTerm: string): string {
   if (!searchTerm.trim()) return text;
   
   const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return text.replace(regex, '<mark class="px-1 rounded font-medium" style="background-color: #0bf0bc">$1</mark>');
+  return text.replace(regex, '<mark class="px-1 rounded font-medium bg-primary/20 text-primary-foreground">$1</mark>');
 }

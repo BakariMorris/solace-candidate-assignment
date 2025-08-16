@@ -21,20 +21,50 @@ import { useComparisonStore } from "../store/useComparisonStore";
 import { useUrlState } from "../hooks/useUrlState";
 import Link from "next/link";
 import { ThemeToggle } from "../components/theme-toggle";
+import OnboardingTour from "../components/OnboardingTour";
+import TrendingSearches from "../components/TrendingSearches";
+import { useOnboarding } from "../hooks/useOnboarding";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { getAdvocateDistance } from "../utils/distance";
+import { performanceMonitor } from "../lib/performance-monitor";
+import { userAnalytics } from "../lib/user-analytics";
+import { searchAnalytics } from "../lib/search-analytics";
 
 const fetchAdvocates = async (): Promise<Advocate[]> => {
-  const res = await fetch("/api/advocates", {
-    headers: {
-      'Cache-Control': 'max-age=300', // 5 minutes
-    },
-  });
+  const startTime = performance.now();
   
-  if (!res.ok) {
-    throw new Error(`Failed to fetch advocates: ${res.status} ${res.statusText}`);
+  try {
+    const res = await fetch("/api/advocates", {
+      headers: {
+        'Cache-Control': 'max-age=300', // 5 minutes
+      },
+    });
+    
+    const duration = performance.now() - startTime;
+    
+    if (!res.ok) {
+      performanceMonitor.trackAPICall('/api/advocates', duration, false, {
+        status: res.status,
+        statusText: res.statusText
+      });
+      throw new Error(`Failed to fetch advocates: ${res.status} ${res.statusText}`);
+    }
+    
+    const jsonResponse = await res.json();
+    
+    performanceMonitor.trackAPICall('/api/advocates', duration, true, {
+      resultCount: jsonResponse.data?.length || 0,
+      cached: res.headers.get('X-Cache') === 'HIT'
+    });
+    
+    return jsonResponse.data;
+  } catch (error) {
+    const duration = performance.now() - startTime;
+    performanceMonitor.trackAPICall('/api/advocates', duration, false, {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw error;
   }
-  
-  const jsonResponse = await res.json();
-  return jsonResponse.data;
 };
 
 function HomeContent() {
@@ -46,15 +76,26 @@ function HomeContent() {
   
   const { favorites } = useFavoritesStore();
   const { selectedForComparison } = useComparisonStore();
+  const { showOnboarding, completeOnboarding, skipOnboarding } = useOnboarding();
+  const { coordinates } = useGeolocation();
   
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [filters, setFilters] = useState({
-    specialties: [] as string[],
-    locations: [] as string[],
-    experienceRange: [0, 30] as [number, number],
-    availability: [] as string[]
+  const [filters, setFilters] = useState<{
+    specialties: string[];
+    locations: string[];
+    experienceRange: [number, number];
+    availability: string[];
+    nearMe?: boolean;
+    maxDistance?: number;
+  }>({
+    specialties: [],
+    locations: [],
+    experienceRange: [0, 30],
+    availability: [],
+    nearMe: false,
+    maxDistance: 25
   });
   const [selectedAdvocate, setSelectedAdvocate] = useState<Advocate | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -62,6 +103,11 @@ function HomeContent() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   
   useUrlState();
+
+  // Track page view on mount
+  useEffect(() => {
+    userAnalytics.trackPageView('/');
+  }, []);
   
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
@@ -143,6 +189,14 @@ function HomeContent() {
         if (!filters.locations.includes(advocate.city)) return false;
       }
 
+      // Distance filter (Near Me)
+      if (filters.nearMe === true && coordinates) {
+        const distance = getAdvocateDistance(advocate.city, coordinates);
+        if (distance === null || distance > (filters.maxDistance ?? 25)) {
+          return false;
+        }
+      }
+
       // Experience range filter
       if (advocate.yearsOfExperience < filters.experienceRange[0] ||
           advocate.yearsOfExperience > filters.experienceRange[1]) {
@@ -151,7 +205,7 @@ function HomeContent() {
 
       return true;
     });
-  }, [currentAdvocates, filters]);
+  }, [currentAdvocates, filters, coordinates]);
 
   // Apply sorting
   const sortedAdvocates = useMemo(() => {
@@ -188,6 +242,23 @@ function HomeContent() {
     
     return sorted;
   }, [filteredByAdvancedFilters, sortBy, sortDirection]);
+
+  // Track search performance when results change
+  useEffect(() => {
+    if (debouncedSearchTerm.trim()) {
+      const searchDuration = 5; // Approximate client-side filtering time
+      performanceMonitor.trackSearch(debouncedSearchTerm, searchDuration, sortedAdvocates.length);
+      
+      // Track search in analytics
+      userAnalytics.trackSearchPerformed(debouncedSearchTerm, sortedAdvocates.length, 5);
+      searchAnalytics.logSearch({
+        query: debouncedSearchTerm,
+        filters: filters,
+        resultCount: sortedAdvocates.length,
+        responseTime: 5
+      });
+    }
+  }, [debouncedSearchTerm, sortedAdvocates.length, filters]);
 
   // Generate active filters for filter chips
   const activeFilters = useMemo(() => {
@@ -237,6 +308,9 @@ function HomeContent() {
   }, [searchTerm, filters]);
 
   const handleRemoveFilter = (filterId: string) => {
+    // Track filter removal
+    userAnalytics.trackEvent('filter_removed', 'interaction', 'remove_filter', filterId);
+    
     if (filterId === 'search') {
       setSearchTerm('');
     } else if (filterId.startsWith('specialty-')) {
@@ -266,16 +340,24 @@ function HomeContent() {
   };
 
   const handleClearAllFilters = () => {
+    // Track clear all filters action
+    userAnalytics.trackEvent('clear_all_filters', 'interaction', 'clear_filters');
+    
     setSearchTerm('');
     setFilters({
-      specialties: [] as string[],
-      locations: [] as string[],
-      experienceRange: [0, 30] as [number, number],
-      availability: [] as string[]
+      specialties: [],
+      locations: [],
+      experienceRange: [0, 30],
+      availability: [],
+      nearMe: false,
+      maxDistance: 25
     });
   };
 
   const handleViewProfile = (advocate: Advocate) => {
+    // Track advocate profile view
+    userAnalytics.trackAdvocateView(advocate.id!, `${advocate.firstName} ${advocate.lastName}`);
+    
     setSelectedAdvocate(advocate);
     setIsProfileModalOpen(true);
   };
@@ -286,6 +368,9 @@ function HomeContent() {
   };
 
   const handleBookConsultation = (advocate: Advocate) => {
+    // Track booking consultation start
+    userAnalytics.trackBookingStarted(advocate.id!);
+    
     setBookingAdvocate(advocate);
     setIsBookingModalOpen(true);
   };
@@ -331,7 +416,7 @@ function HomeContent() {
           <ThemeToggle />
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/compare">
+          <Link href="/compare" data-tour="compare-nav">
             <Button variant="outline" className="flex items-center gap-2 hover:bg-accent hover:text-accent-foreground">
               <Scale className={`h-4 w-4 ${selectedForComparison.length > 0 ? 'text-primary' : ''}`} />
               Compare
@@ -342,9 +427,9 @@ function HomeContent() {
               )}
             </Button>
           </Link>
-          <Link href="/favorites">
+          <Link href="/favorites" data-tour="favorites-nav">
             <Button variant="outline" className="flex items-center gap-2 hover:bg-accent hover:text-accent-foreground">
-              <Heart className={`h-4 w-4 ${favorites.length > 0 ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`h-4 w-4 ${favorites.length > 0 ? 'fill-primary text-primary' : ''}`} />
               Favorites
               {favorites.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
@@ -360,21 +445,23 @@ function HomeContent() {
       <div className="mb-8">
         <h1 className="text-display mb-4">Solace Advocates</h1>
         <p className="text-body-lg text-muted-foreground">
-          Find the perfect legal advocate for your needs
+          Find the perfect advocate to support your journey
         </p>
       </div>
 
       {/* Search and Filters */}
       <div className="mb-6 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-          <div className="flex-1 w-full lg:w-auto">
+          <div className="flex-1 w-full lg:w-auto" data-tour="search">
             <EnhancedSearchForm onSearch={setSearchTerm} />
           </div>
-          <AdvancedFilters
-            onFiltersChange={setFilters}
-            availableSpecialties={availableSpecialties}
-            availableLocations={availableLocations}
-          />
+          <div data-tour="filters">
+            <AdvancedFilters
+              onFiltersChange={setFilters}
+              availableSpecialties={availableSpecialties}
+              availableLocations={availableLocations}
+            />
+          </div>
         </div>
 
         {/* Active Filters */}
@@ -383,6 +470,14 @@ function HomeContent() {
           onRemoveFilter={handleRemoveFilter}
           onClearAll={handleClearAllFilters}
         />
+
+        {/* Trending Searches */}
+        {searchTerm === '' && activeFilters.length === 0 && (
+          <TrendingSearches 
+            onSearchSelect={setSearchTerm}
+            className="mt-4"
+          />
+        )}
       </div>
 
       {/* View Controls */}
@@ -440,6 +535,8 @@ function HomeContent() {
         isOpen={isProfileModalOpen}
         onClose={handleCloseProfileModal}
         onBookConsultation={handleBookConsultation}
+        allAdvocates={advocates}
+        onViewProfile={handleViewProfile}
       />
 
       {/* Booking Modal */}
@@ -447,6 +544,13 @@ function HomeContent() {
         advocate={bookingAdvocate}
         isOpen={isBookingModalOpen}
         onClose={handleCloseBookingModal}
+      />
+
+      {/* Onboarding Tour */}
+      <OnboardingTour
+        isOpen={showOnboarding}
+        onComplete={completeOnboarding}
+        onSkip={skipOnboarding}
       />
     </main>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Star, MapPin, Briefcase, Phone, Mail, Calendar, Award, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -8,6 +9,7 @@ import { Advocate } from "../types/advocate";
 import { formatPhoneNumber } from "../utils/formatPhone";
 import { useComparisonStore } from "../store/useComparisonStore";
 import LazyImage from "./LazyImage";
+import BookingModal from "./BookingModal";
 
 interface ComparisonTableProps {
   advocates: Advocate[];
@@ -15,6 +17,18 @@ interface ComparisonTableProps {
 
 export default function ComparisonTable({ advocates }: ComparisonTableProps) {
   const { removeFromComparison } = useComparisonStore();
+  const [selectedAdvocateForBooking, setSelectedAdvocateForBooking] = useState<Advocate | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+
+  const handleBookAdvocate = (advocate: Advocate) => {
+    setSelectedAdvocateForBooking(advocate);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBookingModal = () => {
+    setIsBookingModalOpen(false);
+    setSelectedAdvocateForBooking(null);
+  };
 
   if (advocates.length === 0) {
     return (
@@ -65,7 +79,7 @@ export default function ComparisonTable({ advocates }: ComparisonTableProps) {
               Criteria
             </td>
             {advocateData.map((advocate) => (
-              <td key={advocate.id} className="p-4 border-b border-l bg-background relative min-w-64">
+              <td key={advocate.id} className="p-4 border-b border-l bg-background relative" style={{width: `${100 / advocateData.length}%`}}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -85,7 +99,7 @@ export default function ComparisonTable({ advocates }: ComparisonTableProps) {
                 {field.label}
               </td>
               {advocateData.map((advocate) => (
-                <td key={advocate.id} className="p-4 border-l">
+                <td key={advocate.id} className="p-4 border-l" style={{width: `${100 / advocateData.length}%`}}>
                   {field.key === "photo" && (
                     <div className="flex justify-center">
                       <LazyImage
@@ -159,7 +173,7 @@ export default function ComparisonTable({ advocates }: ComparisonTableProps) {
                   )}
                   
                   {field.key === "specialties" && (
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                    <div className="space-y-1 max-h-32 overflow-y-auto text-center">
                       {advocate.specialties.slice(0, 8).map((specialty, index) => (
                         <Badge key={index} variant="secondary" className="text-xs mr-1">
                           {specialty}
@@ -183,7 +197,12 @@ export default function ComparisonTable({ advocates }: ComparisonTableProps) {
                         <Mail className="h-3 w-3 mr-1" />
                         Email
                       </Button>
-                      <Button variant="default" size="sm" className="w-full text-xs">
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="w-full text-xs"
+                        onClick={() => handleBookAdvocate(advocate)}
+                      >
                         <Calendar className="h-3 w-3 mr-1" />
                         Book
                       </Button>
@@ -195,6 +214,13 @@ export default function ComparisonTable({ advocates }: ComparisonTableProps) {
           ))}
         </tbody>
       </table>
+      
+      {/* Booking Modal */}
+      <BookingModal
+        advocate={selectedAdvocateForBooking}
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseBookingModal}
+      />
     </div>
   );
 }
