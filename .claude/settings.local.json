@@ -4,7 +4,9 @@
       "Bash(npm run dev:*)",
       "Bash(npx tsc:*)",
       "Bash(curl:*)",
-      "Bash(npm run generate:*)"
+      "Bash(npm run generate:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": [],

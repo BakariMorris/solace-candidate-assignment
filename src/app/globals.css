@@ -2,7 +2,135 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 162 72% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 162 20% 94%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 162 20% 94%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 162 72% 46%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 162 72% 56%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 162 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 162 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 162 72% 76%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Ensure proper contrast for cards in dark mode */
+  .dark .card-elevated {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .card-flat {
+    border-color: hsl(var(--border));
+  }
+  
+  /* Improve interactive hover for dark mode */
+  .dark .interactive-hover:hover {
+    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@layer utilities {
+  /* Typography Scale - Optimized for Spectral */
+  .text-display {
+    @apply text-5xl font-bold tracking-tight leading-tight;
+  }
+  .text-h1 {
+    @apply text-4xl font-bold tracking-tight leading-tight;
+  }
+  .text-h2 {
+    @apply text-3xl font-semibold tracking-tight leading-snug;
+  }
+  .text-h3 {
+    @apply text-2xl font-semibold tracking-tight leading-snug;
+  }
+  .text-h4 {
+    @apply text-xl font-semibold tracking-normal leading-snug;
+  }
+  .text-body-lg {
+    @apply text-lg leading-relaxed tracking-normal;
+  }
+  .text-body {
+    @apply text-base leading-relaxed tracking-normal;
+  }
+  .text-body-sm {
+    @apply text-sm leading-relaxed tracking-normal;
+  }
+  .text-caption {
+    @apply text-xs leading-normal tracking-wide;
+  }
+
+  /* Spacing Scale */
+  .spacing-xs {
+    @apply p-1;
+  }
+  .spacing-sm {
+    @apply p-2;
+  }
+  .spacing-md {
+    @apply p-4;
+  }
+  .spacing-lg {
+    @apply p-6;
+  }
+  .spacing-xl {
+    @apply p-8;
+  }
+  .spacing-2xl {
+    @apply p-12;
+  }
+
+  /* Component Utilities */
+  .card-elevated {
+    @apply shadow-lg border-0 bg-card;
+  }
+  .card-flat {
+    @apply shadow-none border bg-card;
+  }
+  .interactive-hover {
+    @apply transition-all duration-200 ease-in-out hover:shadow-md hover:-translate-y-0.5;
+  }
 }

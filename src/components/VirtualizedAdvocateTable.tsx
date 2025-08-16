@@ -9,16 +9,18 @@ import LazyImage from "./LazyImage";
 interface RowProps {
   index: number;
   advocate: Advocate;
+  onViewProfile?: (advocate: Advocate) => void;
 }
 
-const Row = memo(({ index, advocate }: RowProps) => {
+const Row = memo(({ index, advocate, onViewProfile }: RowProps) => {
   return (
     <div 
       data-index={index}
-      className="flex py-2 border-b border-gray-200 hover:bg-gray-50 transition-colors h-full items-stretch"
+      className="flex py-2 border-b border-gray-200 hover:bg-gray-50 transition-colors h-full items-stretch cursor-pointer"
       style={{
         backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white"
       }}
+      onClick={() => onViewProfile?.(advocate)}
     >
       <div className="w-[8%] p-2 border-r border-gray-200 text-sm flex-shrink-0 flex items-center justify-center">
         <LazyImage 
@@ -60,6 +62,7 @@ Row.displayName = "AdvocateRow";
 interface VirtualizedAdvocateTableProps {
   advocates: Advocate[];
   height?: number;
+  onViewProfile?: (advocate: Advocate) => void;
 }
 
 const TableHeader = memo(() => (
@@ -113,7 +116,8 @@ const estimateRowHeight = (advocate: Advocate, windowWidth: number): number => {
 
 export default function VirtualizedAdvocateTable({ 
   advocates, 
-  height = 600 
+  height = 600,
+  onViewProfile
 }: VirtualizedAdvocateTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [windowWidth, setWindowWidth] = useState(0);
@@ -194,7 +198,8 @@ export default function VirtualizedAdvocateTable({
             >
               <Row 
                 index={virtualItem.index} 
-                advocate={advocates[virtualItem.index]} 
+                advocate={advocates[virtualItem.index]}
+                onViewProfile={onViewProfile}
               />
             </div>
           );
