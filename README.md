@@ -2,7 +2,7 @@ Solace Advocate Search — Candidate Submission 🚀
 
 Hello! This is my candidate sumbission for the Solace Advocate Search application. The goal was to take an early-stage prototype and transform it into a production-ready, high-performance platform capable of handling 100k+ advocates with robust search, filtering, booking, and observability features. Feel free to visit my: 
 
-- *Deployed site:** [https://solace-candidate-assignment-tau.vercel.app/](https://solace-candidate-assignment-tau.vercel.app/)
+- **Deployed site:** [https://solace-candidate-assignment-tau.vercel.app/](https://solace-candidate-assignment-tau.vercel.app/)
 - **Explainer video:** [Watch on Loom](https://www.loom.com/share/a6c7ca9bf6854e81a076cb9352729f58)
 - **Project breakdown:** [DISCUSSION.md on GitHub](https://github.com/BakariMorris/solace-candidate-assignment/blob/master/DISCUSSION.md) — Ordered by PR
 
@@ -187,3 +187,4 @@ Balanced production-readiness with time constraints by prioritizing features wit
 
 
 👉 This README demonstrates how I’d approach building and documenting a candidate project like a production engineer: clear technical rigor, strong design thinking, and thoughtful communication.
+
