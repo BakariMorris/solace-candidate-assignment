@@ -24,7 +24,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Solace Advocates",
+  title: "Advocates",
   description: "Find the perfect advocate to support your journey",
 };
 

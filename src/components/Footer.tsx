@@ -14,10 +14,10 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-3">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">S</span>
+                <span className="text-primary-foreground font-bold text-lg">A</span>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-xl font-bold text-foreground">Solace</h3>
+                <h3 className="text-xl font-bold text-foreground">Advocate Search</h3>
                 <p className="text-xs text-muted-foreground leading-none">
                   Find Your Advocate
                 </p>
@@ -65,14 +65,14 @@ export default function Footer() {
               <div className="flex items-center space-x-3 text-body-sm text-muted-foreground">
                 <Phone className="h-4 w-4 text-primary" />
                 <div>
-                  <div className="font-medium">1-800-SOLACE</div>
+                  <div className="font-medium">1-800-ADVOCATE</div>
                   <div className="text-xs">Call us anytime</div>
                 </div>
               </div>
               <div className="flex items-center space-x-3 text-body-sm text-muted-foreground">
                 <Mail className="h-4 w-4 text-primary" />
                 <div>
-                  <div className="font-medium">help@solace.com</div>
+                  <div className="font-medium">help@advocate.com</div>
                   <div className="text-xs">24/7 email support</div>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function Footer() {
         <div className="border-t border-border pt-6">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-body-sm text-muted-foreground">
-              <p>&copy; 2024 Solace. All rights reserved.</p>
+              <p>&copy; 2024 Advocate Search. All rights reserved.</p>
               <div className="flex items-center space-x-4">
                 <Link href="#" className="hover:text-primary transition-colors duration-200">
                   Privacy Policy

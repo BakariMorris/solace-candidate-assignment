@@ -18,7 +18,7 @@ interface TourStep {
 const tourSteps: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Welcome to Solace',
+    title: 'Welcome to Advocate Search',
     description: 'Find the perfect advocate for your needs. Let us show you around!',
     target: '.container',
     position: 'bottom',

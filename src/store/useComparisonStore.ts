@@ -52,7 +52,7 @@ export const useComparisonStore = create<ComparisonState>()(
       }
     }),
     {
-      name: 'solace-comparison-storage',
+      name: 'advocate-comparison-storage',
       version: 1,
     }
   )

@@ -1,6 +1,6 @@
 # Summary of Changes Made
 
-This document tracks the comprehensive changes made across multiple pull requests to transform the Solace advocate search application from a basic implementation to a production-ready, high-performance platform capable of handling 100k+ advocates.
+This document tracks the comprehensive changes made across multiple pull requests to transform the advocate search application from a basic implementation to a production-ready, high-performance platform capable of handling 100k+ advocates.
 
 ## PR #1: Rendering Cleanup and Optimization
 **Objective:** Establish foundational React patterns and prepare application for production use.
@@ -74,7 +74,7 @@ This document tracks the comprehensive changes made across multiple pull request
 **Objective:** Complete UI/UX Design Overhaul (Phase 4) and Advanced Features & Polish (Phase 5) with modern design system and enhanced user experience.
 
 #### **shadcn/ui Design System Implementation**
-* **Component Library Integration:** Installed and configured shadcn/ui with blue theme and then went with a slightly darker solace green to match the company
+* **Component Library Integration:** Installed and configured shadcn/ui with blue theme and then went with a slightly darker green theme
 * **Design Tokens & Tailwind:** Created comprehensive CSS custom properties for colors, spacing, and typography Updated config for shadcn/ui compatibility with animations and custom utilities. Updated the tailwind config to work with the new component library
 
 #### **Enhanced Search & Filtering UI**

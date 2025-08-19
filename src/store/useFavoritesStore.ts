@@ -47,7 +47,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       }
     }),
     {
-      name: 'solace-favorites-storage',
+      name: 'advocate-favorites-storage',
       version: 1,
     }
   )

@@ -1,6 +1,6 @@
-Solace Advocate Search — Candidate Submission 🚀
+Advocate Search — Candidate Submission 🚀
 
-Hello! This is my candidate sumbission for the Solace Advocate Search application. The goal was to take an early-stage prototype and transform it into a production-ready, high-performance platform capable of handling 100k+ advocates with robust search, filtering, booking, and observability features. Feel free to visit my: 
+Hello! This is my candidate sumbission for the Advocate Search application. The goal was to take an early-stage prototype and transform it into a production-ready, high-performance platform capable of handling 100k+ advocates with robust search, filtering, booking, and observability features. Feel free to visit my:
 
 - **Deployed site:** [https://solace-candidate-assignment-tau.vercel.app/](https://solace-candidate-assignment-tau.vercel.app/)
 - **Explainer video:** [Watch on Loom](https://www.loom.com/share/a6c7ca9bf6854e81a076cb9352729f58)
@@ -124,7 +124,7 @@ Completed missing Next.js error components.
 
 PR #7: UI/UX Overhaul & Advanced Features
 
-Integrated shadcn/ui with custom design tokens and Solace green theme.
+Integrated shadcn/ui with custom design tokens and custom green theme.
 
 Built advanced search (autocomplete, suggestions, recent searches).
 
@@ -153,7 +153,7 @@ Comparison tables and filter chips for intuitive decision-making.
 🛠️ Running Locally
 # Clone repo
 git clone <candidate-repo-url>
-cd solace-advocate-search
+cd advocate-search
 
 # Install deps
 pnpm install

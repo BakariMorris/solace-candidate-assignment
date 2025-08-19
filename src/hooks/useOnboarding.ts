@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const ONBOARDING_KEY = 'solace-onboarding-completed';
+const ONBOARDING_KEY = 'advocate-onboarding-completed';
 
 export function useOnboarding() {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true); // Default to true to avoid flash

@@ -26,11 +26,11 @@ export default function Header() {
         {/* Logo and Brand */}
         <Link href="/" className="flex items-center space-x-3 group">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-            <span className="text-primary-foreground font-bold text-lg">S</span>
+            <span className="text-primary-foreground font-bold text-lg">A</span>
           </div>
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-200">
-              Solace
+              Advocate Search
             </h1>
             <p className="text-xs text-muted-foreground leading-none">
               Find Your Advocate
@@ -94,12 +94,12 @@ export default function Header() {
           <div className="hidden lg:flex items-center space-x-3 mr-4">
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Phone className="h-4 w-4" />
-              <span>1-800-SOLACE</span>
+              <span>1-800-ADVOCATE</span>
             </div>
             <div className="w-px h-4 bg-border"></div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
-              <span>help@solace.com</span>
+              <span>help@advocate.com</span>
             </div>
           </div>
           

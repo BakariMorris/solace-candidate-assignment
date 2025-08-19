@@ -443,7 +443,7 @@ function HomeContent() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-display mb-4">Solace Advocates</h1>
+        <h1 className="text-display mb-4">Advocates</h1>
         <p className="text-body-lg text-muted-foreground">
           Find the perfect advocate to support your journey
         </p>
