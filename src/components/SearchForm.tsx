@@ -11,7 +11,7 @@ interface SearchFormProps {
 
 const SearchForm = memo(({ 
   onSearch, 
-  placeholder = "Search advocates...",
+  placeholder = "Search healthcare advocates...",
   showRecentSearches = true 
 }: SearchFormProps) => {
   const { 

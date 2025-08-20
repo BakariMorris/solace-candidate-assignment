@@ -59,10 +59,10 @@ export default function ComparePage() {
             <div>
               <h1 className="text-display flex items-center gap-3">
                 <Scale className="h-8 w-8 text-primary" />
-                Compare Advocates
+                Compare Healthcare Advocates
               </h1>
               <p className="text-body-lg text-muted-foreground">
-                Compare advocates side by side to make the best choice for your needs
+                Compare healthcare advocates side by side to make the best choice for your needs
               </p>
             </div>
           </div>
@@ -112,14 +112,14 @@ export default function ComparePage() {
         <Card className="text-center py-12">
           <CardContent>
             <Scale className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-h3 font-semibold mb-2">No Advocates Selected</h2>
+            <h2 className="text-h3 font-semibold mb-2">No Healthcare Advocates Selected</h2>
             <p className="text-body text-muted-foreground mb-6 max-w-md mx-auto">
-              Start building your comparison by adding advocates from the search results. 
-              Look for the "Compare" button on each advocate card.
+              Start building your comparison by adding healthcare advocates from the search results. 
+              Look for the "Compare" button on each healthcare advocate card.
             </p>
             <Link href="/">
               <Button>
-                Browse Advocates
+                Browse Healthcare Advocates
               </Button>
             </Link>
           </CardContent>
@@ -152,7 +152,7 @@ export default function ComparePage() {
               <h3 className="font-semibold mb-4">Next Steps</h3>
               <div className="flex flex-wrap gap-3">
                 <Button>
-                  Contact Selected Advocates
+                  Contact Selected Healthcare Advocates
                 </Button>
                 <Button variant="outline">
                   Save Comparison

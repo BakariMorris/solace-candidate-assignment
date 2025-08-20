@@ -17,19 +17,19 @@ export default function Footer() {
                 <span className="text-primary-foreground font-bold text-lg">A</span>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-xl font-bold text-foreground">Advocate Search</h3>
+                <h3 className="text-xl font-bold text-foreground">Healthcare Advocate Search</h3>
                 <p className="text-xs text-muted-foreground leading-none">
-                  Find Your Advocate
+                  Find Your Healthcare Advocate
                 </p>
               </div>
             </Link>
             <p className="text-body-sm text-muted-foreground leading-relaxed">
-              Connecting you with experienced advocates who understand your needs. 
+              Connecting you with experienced healthcare advocates who understand your needs. 
               Find the right representation with confidence and ease.
             </p>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Shield className="h-4 w-4 text-primary" />
-              <span>Verified & Trusted Advocates</span>
+              <span>Verified & Trusted Healthcare Advocates</span>
             </div>
           </div>
 
@@ -38,7 +38,7 @@ export default function Footer() {
             <h4 className="text-h4 font-semibold text-foreground">Quick Links</h4>
             <nav className="space-y-2">
               <Link href="/" className="block text-body-sm text-muted-foreground hover:text-primary transition-colors duration-200">
-                Find Advocates
+                Find Healthcare Advocates
               </Link>
               <Link href="/favorites" className="block text-body-sm text-muted-foreground hover:text-primary transition-colors duration-200">
                 <div className="flex items-center space-x-2">
@@ -47,7 +47,7 @@ export default function Footer() {
                 </div>
               </Link>
               <Link href="/compare" className="block text-body-sm text-muted-foreground hover:text-primary transition-colors duration-200">
-                Compare Advocates
+                Compare Healthcare Advocates
               </Link>
               <Link href="#" className="block text-body-sm text-muted-foreground hover:text-primary transition-colors duration-200">
                 How It Works
@@ -94,7 +94,7 @@ export default function Footer() {
                 Advocacy Guide
               </Link>
               <Link href="#" className="block text-body-sm text-muted-foreground hover:text-primary transition-colors duration-200">
-                Advocate Directory
+                Healthcare Advocate Directory
               </Link>
               <Link href="#" className="block text-body-sm text-muted-foreground hover:text-primary transition-colors duration-200">
                 Consultation Tips
@@ -117,7 +117,7 @@ export default function Footer() {
                 <Shield className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <div className="font-medium text-foreground">Verified Advocates</div>
+                <div className="font-medium text-foreground">Verified Healthcare Advocates</div>
                 <div className="text-xs">Background checked & licensed</div>
               </div>
             </div>
@@ -136,7 +136,7 @@ export default function Footer() {
               </div>
               <div>
                 <div className="font-medium text-foreground">Nationwide Coverage</div>
-                <div className="text-xs">Advocates in all 50 states</div>
+                <div className="text-xs">Healthcare Advocates in all 50 states</div>
               </div>
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function Footer() {
         <div className="border-t border-border pt-6">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-body-sm text-muted-foreground">
-              <p>&copy; 2024 Advocate Search. All rights reserved.</p>
+              <p>&copy; 2024 Healthcare Advocate Search. All rights reserved.</p>
               <div className="flex items-center space-x-4">
                 <Link href="#" className="hover:text-primary transition-colors duration-200">
                   Privacy Policy

@@ -60,10 +60,10 @@ export default function FavoritesPage() {
             <div>
               <h1 className="text-display flex items-center gap-3">
                 <Heart className="h-8 w-8 text-primary fill-current" />
-                My Favorite Advocates
+                My Favorite Healthcare Advocates
               </h1>
               <p className="text-body-lg text-muted-foreground">
-                Advocates you've saved for easy access
+                Healthcare advocates you've saved for easy access
               </p>
             </div>
           </div>
@@ -97,11 +97,11 @@ export default function FavoritesPage() {
             <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h2 className="text-h3 font-semibold mb-2">No Favorites Yet</h2>
             <p className="text-body text-muted-foreground mb-6 max-w-md mx-auto">
-              Start building your list of favorite advocates by clicking the heart icon on advocate cards.
+              Start building your list of favorite healthcare advocates by clicking the heart icon on healthcare advocate cards.
             </p>
             <Link href="/">
               <Button>
-                Browse Advocates
+                Browse Healthcare Advocates
               </Button>
             </Link>
           </CardContent>

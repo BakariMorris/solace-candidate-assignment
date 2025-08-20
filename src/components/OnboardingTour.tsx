@@ -18,16 +18,16 @@ interface TourStep {
 const tourSteps: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Welcome to Advocate Search',
-    description: 'Find the perfect advocate for your needs. Let us show you around!',
+    title: 'Welcome to Healthcare Advocate Search',
+    description: 'Find the perfect healthcare advocate for your needs. Let us show you around!',
     target: '.container',
     position: 'bottom',
     icon: <User className="h-5 w-5" />
   },
   {
     id: 'search',
-    title: 'Search for Advocates',
-    description: 'Use the search bar to find advocates by name, specialty, location, or experience.',
+    title: 'Search for Healthcare Advocates',
+    description: 'Use the search bar to find healthcare advocates by name, specialty, location, or experience.',
     target: '[data-tour="search"]',
     position: 'bottom',
     icon: <Search className="h-5 w-5" />
@@ -43,15 +43,15 @@ const tourSteps: TourStep[] = [
   {
     id: 'favorites',
     title: 'Save Favorites',
-    description: 'Click the heart icon on any advocate card to save them to your favorites.',
+    description: 'Click the heart icon on any healthcare advocate card to save them to your favorites.',
     target: '[data-tour="favorites-nav"]',
     position: 'bottom',
     icon: <Heart className="h-5 w-5" />
   },
   {
     id: 'compare',
-    title: 'Compare Advocates',
-    description: 'Use the scale icon to add advocates to comparison (up to 4) and compare them side by side.',
+    title: 'Compare Healthcare Advocates',
+    description: 'Use the scale icon to add healthcare advocates to comparison (up to 4) and compare them side by side.',
     target: '[data-tour="compare-nav"]',
     position: 'bottom',
     icon: <Scale className="h-5 w-5" />
@@ -160,15 +160,15 @@ export default function OnboardingTour({ isOpen, onComplete, onSkip }: Onboardin
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-body-sm">
                   <Search className="h-4 w-4 text-primary" />
-                  <span>Search and filter advocates</span>
+                  <span>Search and filter healthcare advocates</span>
                 </div>
                 <div className="flex items-center gap-2 text-body-sm">
                   <Heart className="h-4 w-4 text-primary" />
-                  <span>Save your favorite advocates</span>
+                  <span>Save your favorite healthcare advocates</span>
                 </div>
                 <div className="flex items-center gap-2 text-body-sm">
                   <Scale className="h-4 w-4 text-primary" />
-                  <span>Compare advocates side by side</span>
+                  <span>Compare healthcare advocates side by side</span>
                 </div>
               </div>
             )}

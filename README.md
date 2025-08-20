@@ -1,19 +1,19 @@
-# Advocate Search Platform
+# Healthcare Advocate Search Platform
 
-A high-performance advocate search and booking platform built with Next.js and TypeScript. Find, compare, and book consultations with qualified advocates across various specialties.
+A high-performance healthcare advocate search and booking platform built with Next.js and TypeScript. Find, compare, and book consultations with qualified healthcare advocates across various specialties.
 
 ## 🚀 Key Features
 
 ### Search & Discovery
-- **Advanced Search**: Full-text search across advocate names, specialties, locations, and credentials
+- **Advanced Search**: Full-text search across healthcare advocate names, specialties, locations, and credentials
 - **Smart Filtering**: Multi-criteria filters for specialty, location, experience level, and availability
 - **Autocomplete**: Real-time search suggestions with recent search history
-- **Virtualized Rendering**: Handles 100k+ advocates with smooth scrolling performance
+- **Virtualized Rendering**: Handles 100k+ healthcare advocates with smooth scrolling performance
 
-### Advocate Management
-- **Professional Profiles**: Detailed advocate profiles with photos, bios, credentials, and ratings
-- **Comparison Tool**: Side-by-side comparison of up to 4 advocates with CSV export
-- **Favorites**: Save and organize preferred advocates for quick access
+### Healthcare Advocate Management
+- **Professional Profiles**: Detailed healthcare advocate profiles with photos, bios, credentials, and ratings
+- **Comparison Tool**: Side-by-side comparison of up to 4 healthcare advocates with CSV export
+- **Favorites**: Save and organize preferred healthcare advocates for quick access
 - **Availability Tracking**: Real-time availability status and booking calendar
 
 ### Booking System
@@ -72,7 +72,7 @@ Visit [http://localhost:3000](http://localhost:3000) to view the application.
 
 - **Initial Load**: < 2 seconds
 - **Search Response**: < 120ms
-- **Dataset Size**: Supports 100k+ advocates
+- **Dataset Size**: Supports 100k+ healthcare advocates
 - **Lighthouse Score**: 95+
 - **Accessibility**: WCAG 2.1 compliant
 

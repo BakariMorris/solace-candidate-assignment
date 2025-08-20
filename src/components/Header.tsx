@@ -30,10 +30,10 @@ export default function Header() {
           </div>
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-200">
-              Advocate Search
+              Healthcare Advocate Search
             </h1>
             <p className="text-xs text-muted-foreground leading-none">
-              Find Your Advocate
+              Find Your Healthcare Advocate
             </p>
           </div>
         </Link>
@@ -46,7 +46,7 @@ export default function Header() {
               size="sm"
               className="font-medium"
             >
-              Find Advocates
+              Find Healthcare Advocates
             </Button>
           </Link>
           

@@ -128,7 +128,7 @@ export default function BookingModal({ advocate, isOpen, onClose }: BookingModal
           </DialogTitle>
         </DialogHeader>
 
-        {/* Advocate Info */}
+        {/* Healthcare Advocate Info */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">

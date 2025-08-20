@@ -117,7 +117,7 @@ export default function EnhancedSearchForm({ onSearch }: EnhancedSearchFormProps
           <Input
             ref={inputRef}
             type="text"
-            placeholder="Search advocates by name, specialty, location..."
+            placeholder="Search healthcare advocates by name, specialty, location..."
             value={inputValue}
             onChange={(e) => handleInputChange(e.target.value)}
             onFocus={() => setIsOpen(true)}

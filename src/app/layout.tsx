@@ -24,8 +24,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Advocates",
-  description: "Find the perfect advocate to support your journey",
+  title: "Healthcare Advocates",
+  description: "Find the perfect healthcare advocate to support your journey",
 };
 
 export default function RootLayout({
